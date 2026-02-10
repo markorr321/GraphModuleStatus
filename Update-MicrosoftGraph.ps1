@@ -636,6 +636,36 @@ switch ($InstallChoice) {
     }
 }
 
+# Ask for installation scope if user chose to install modules
+$script:InstallScope = "AllUsers"
+if ($InstallChoice -ne "0") {
+    Write-Host ""
+    Write-Host "  Where would you like to install the modules?" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "    [1] All Users" -ForegroundColor White
+    Write-Host "    [2] Current User Only" -ForegroundColor White
+    Write-Host ""
+    Write-Host "        Recommended: All Users" -ForegroundColor Gray
+    Write-Host ""
+    $ScopeChoice = Read-Host "  Enter your choice (1-2) [default: 1]"
+
+    if ([string]::IsNullOrWhiteSpace($ScopeChoice)) {
+        $ScopeChoice = "1"
+    }
+
+    switch ($ScopeChoice) {
+        "1" { $script:InstallScope = "AllUsers" }
+        "2" { $script:InstallScope = "CurrentUser" }
+        default {
+            Write-Host "  Invalid choice. Defaulting to All Users." -ForegroundColor Yellow
+            $script:InstallScope = "AllUsers"
+        }
+    }
+    $ScopeDisplay = if ($script:InstallScope -eq "AllUsers") { "All Users" } else { "Current User Only" }
+    Write-Host ""
+    Write-Host "  Modules will be installed: $ScopeDisplay" -ForegroundColor Gray
+}
+
 if ($InstallChoice -ne "0") {
     # Suppress native progress bars during installation
     $OldProgressPreference = $ProgressPreference
@@ -653,7 +683,7 @@ if ($InstallChoice -ne "0") {
         Write-Host "  (This will install all sub-modules - may take several minutes)" -ForegroundColor Gray
         Write-Host ""
         try {
-            Install-Module Microsoft.Graph -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
+            Install-Module Microsoft.Graph -Scope $script:InstallScope -Force -AllowClobber -ErrorAction Stop
             Write-Host ""
             Write-Host "  Microsoft.Graph installed successfully." -ForegroundColor Green
             $InstallSuccess++
@@ -670,7 +700,7 @@ if ($InstallChoice -ne "0") {
         Write-Host "  (This will install all sub-modules - may take several minutes)" -ForegroundColor Gray
         Write-Host ""
         try {
-            Install-Module Microsoft.Graph.Beta -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
+            Install-Module Microsoft.Graph.Beta -Scope $script:InstallScope -Force -AllowClobber -ErrorAction Stop
             Write-Host ""
             Write-Host "  Microsoft.Graph.Beta installed successfully." -ForegroundColor Green
             $InstallSuccess++
@@ -687,7 +717,7 @@ if ($InstallChoice -ne "0") {
         Write-Host "  (This will install all sub-modules - may take several minutes)" -ForegroundColor Gray
         Write-Host ""
         try {
-            Install-Module Microsoft.Entra -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
+            Install-Module Microsoft.Entra -Scope $script:InstallScope -Force -AllowClobber -ErrorAction Stop
             Write-Host ""
             Write-Host "  Microsoft.Entra installed successfully." -ForegroundColor Green
             $InstallSuccess++
