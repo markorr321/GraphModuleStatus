@@ -36,6 +36,20 @@ Clone the repo and copy to your modules directory:
 Copy-Item -Path ".\GraphModuleStatus" -Destination "$HOME\Documents\PowerShell\Modules\GraphModuleStatus" -Recurse
 ```
 
+### After Installation
+
+Import the module:
+
+```powershell
+Import-Module GraphModuleStatus
+```
+
+To load it automatically on every PowerShell session, add to your profile:
+
+```powershell
+Add-GraphModuleStatusToProfile
+```
+
 ## Usage
 
 ### Check Module Status
