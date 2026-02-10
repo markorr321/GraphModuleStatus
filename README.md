@@ -32,15 +32,24 @@ Copy-Item -Path ".\GraphModuleStatus" -Destination "$HOME\Documents\PowerShell\M
 Get-GraphModuleStatus
 ```
 
-Output:
+Output (when updates available):
 ```
-  Microsoft Graph Module Status
-  =============================
-
-  Microsoft.Graph               v2.25.0 (current)
-  Microsoft.Graph.Beta          v2.25.0 -> v2.26.0 available
+  [Microsoft.Graph]      v2.25.0 → v2.26.0
+  [Microsoft.Graph.Beta] v2.25.0 ● Current
 
   Update available! Run Update-GraphModule to update.
+```
+
+Output (when all current):
+```
+  [Microsoft.Graph]      v2.25.0 ● Current
+  [Microsoft.Graph.Beta] v2.25.0 ● Current
+```
+
+Output (when not installed):
+```
+  [Microsoft.Graph]      ○ Not installed
+  [Microsoft.Graph.Beta] ○ Not installed
 ```
 
 ### Update Modules
