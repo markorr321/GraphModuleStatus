@@ -153,20 +153,13 @@ Adds the GraphModuleStatus module import and status check to your PowerShell pro
 
 **Syntax:**
 ```powershell
-Add-GraphModuleStatusToProfile [-WhatIf] [-Confirm]
+Add-GraphModuleStatusToProfile
 ```
-
-**Parameters:**
-- `-WhatIf` (Switch) - Shows what would be done without making changes
-- `-Confirm` (Switch) - Prompts for confirmation before making changes
 
 **Examples:**
 ```powershell
 # Add to profile
 Add-GraphModuleStatusToProfile
-
-# Preview what would be added
-Add-GraphModuleStatusToProfile -WhatIf
 ```
 
 ### Remove-GraphModuleStatusFromProfile
@@ -174,20 +167,13 @@ Removes the GraphModuleStatus module import and status check from your PowerShel
 
 **Syntax:**
 ```powershell
-Remove-GraphModuleStatusFromProfile [-WhatIf] [-Confirm]
+Remove-GraphModuleStatusFromProfile
 ```
-
-**Parameters:**
-- `-WhatIf` (Switch) - Shows what would be done without making changes
-- `-Confirm` (Switch) - Prompts for confirmation before making changes
 
 **Examples:**
 ```powershell
 # Remove from profile
 Remove-GraphModuleStatusFromProfile
-
-# Preview what would be removed
-Remove-GraphModuleStatusFromProfile -WhatIf
 ```
 
 ## Requirements
