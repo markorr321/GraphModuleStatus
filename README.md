@@ -106,23 +106,89 @@ Add-GraphModuleStatusToProfile
 Remove-GraphModuleStatusFromProfile
 ```
 
-## Functions
-
-| Function | Description |
-|----------|-------------|
-| `Get-GraphModuleStatus` | Displays installed vs available versions of Graph modules |
-| `Update-GraphModule` | Runs the clean reinstall script for Graph modules |
-| `Add-GraphModuleStatusToProfile` | Adds the status check to your PowerShell profile |
-| `Remove-GraphModuleStatusFromProfile` | Removes the status check from your profile |
-
-## Parameters
+## Available Cmdlets
 
 ### Get-GraphModuleStatus
+Displays the status of Microsoft Graph modules (installed vs available versions).
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `-Silent` | Switch | Suppresses output and returns objects instead |
-| `-NoPrompt` | Switch | Does not show the update prompt when updates are available |
+**Syntax:**
+```powershell
+Get-GraphModuleStatus [-Silent] [-NoPrompt]
+```
+
+**Parameters:**
+- `-Silent` (Switch) - Suppresses console output and returns objects instead
+- `-NoPrompt` (Switch) - Does not prompt to run the update script when updates are available
+
+**Examples:**
+```powershell
+# Check module status with console output
+Get-GraphModuleStatus
+
+# Get status as objects for scripting
+$status = Get-GraphModuleStatus -Silent
+
+# Check status without update prompt
+Get-GraphModuleStatus -NoPrompt
+```
+
+### Update-GraphModule
+Runs the Microsoft Graph module update script to perform a clean uninstall and reinstall.
+
+**Syntax:**
+```powershell
+Update-GraphModule
+```
+
+**Parameters:** None
+
+**Examples:**
+```powershell
+# Run the update process
+Update-GraphModule
+```
+
+### Add-GraphModuleStatusToProfile
+Adds the GraphModuleStatus module import and status check to your PowerShell profile.
+
+**Syntax:**
+```powershell
+Add-GraphModuleStatusToProfile [-WhatIf] [-Confirm]
+```
+
+**Parameters:**
+- `-WhatIf` (Switch) - Shows what would be done without making changes
+- `-Confirm` (Switch) - Prompts for confirmation before making changes
+
+**Examples:**
+```powershell
+# Add to profile
+Add-GraphModuleStatusToProfile
+
+# Preview what would be added
+Add-GraphModuleStatusToProfile -WhatIf
+```
+
+### Remove-GraphModuleStatusFromProfile
+Removes the GraphModuleStatus module import and status check from your PowerShell profile.
+
+**Syntax:**
+```powershell
+Remove-GraphModuleStatusFromProfile [-WhatIf] [-Confirm]
+```
+
+**Parameters:**
+- `-WhatIf` (Switch) - Shows what would be done without making changes
+- `-Confirm` (Switch) - Prompts for confirmation before making changes
+
+**Examples:**
+```powershell
+# Remove from profile
+Remove-GraphModuleStatusFromProfile
+
+# Preview what would be removed
+Remove-GraphModuleStatusFromProfile -WhatIf
+```
 
 ## Requirements
 
