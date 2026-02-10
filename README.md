@@ -10,6 +10,18 @@ A PowerShell module that checks the status of Microsoft Graph PowerShell modules
 
 ## Installation
 
+### From GitHub (One-Liner)
+
+```powershell
+Invoke-RestMethod "https://raw.githubusercontent.com/markorr321/GraphModuleStatus/main/GraphModuleStatus.psm1" -OutFile "$HOME\Documents\PowerShell\Modules\GraphModuleStatus\GraphModuleStatus.psm1"; Invoke-RestMethod "https://raw.githubusercontent.com/markorr321/GraphModuleStatus/main/GraphModuleStatus.psd1" -OutFile "$HOME\Documents\PowerShell\Modules\GraphModuleStatus\GraphModuleStatus.psd1"; Invoke-RestMethod "https://raw.githubusercontent.com/markorr321/GraphModuleStatus/main/Update-MicrosoftGraph.ps1" -OutFile "$HOME\Documents\PowerShell\Modules\GraphModuleStatus\Update-MicrosoftGraph.ps1"
+```
+
+Or use this simpler version:
+
+```powershell
+$m="$HOME\Documents\PowerShell\Modules\GraphModuleStatus";New-Item $m -ItemType Directory -Force|Out-Null;@("psm1","psd1")|%{Invoke-RestMethod "https://raw.githubusercontent.com/markorr321/GraphModuleStatus/main/GraphModuleStatus.$_" -OutFile "$m\GraphModuleStatus.$_"};Invoke-RestMethod "https://raw.githubusercontent.com/markorr321/GraphModuleStatus/main/Update-MicrosoftGraph.ps1" -OutFile "$m\Update-MicrosoftGraph.ps1"
+```
+
 ### From PowerShell Gallery (Coming Soon)
 
 ```powershell
@@ -18,7 +30,7 @@ Install-Module -Name GraphModuleStatus -Scope CurrentUser
 
 ### Manual Installation
 
-Copy the module folder to your PowerShell modules directory:
+Clone the repo and copy to your modules directory:
 
 ```powershell
 Copy-Item -Path ".\GraphModuleStatus" -Destination "$HOME\Documents\PowerShell\Modules\GraphModuleStatus" -Recurse
