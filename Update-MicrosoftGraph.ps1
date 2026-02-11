@@ -37,10 +37,6 @@
     - Commands not being recognized after module updates
     - Multiple authentication prompts when using Graph/Entra cmdlets
 
-.PARAMETER None
-    This script does not accept any parameters. It runs interactively and displays
-    progress information throughout the process.
-
 .INPUTS
     None. This script does not accept pipeline input.
 
@@ -62,7 +58,6 @@
 .NOTES
     File Name      : Update-MicrosoftGraph.ps1
     Author         : Mark Orr
-    Company        : First American
     Prerequisite   : PowerShell 5.1 or later
                      Internet connectivity to PowerShell Gallery
                      Administrator rights may be needed for system-wide module locations
@@ -667,13 +662,8 @@ if ($InstallChoice -ne "0") {
 }
 
 if ($InstallChoice -ne "0") {
-    # Suppress native progress bars during installation
-    $OldProgressPreference = $ProgressPreference
-    $ProgressPreference = 'SilentlyContinue'
-
     Write-Host ""
     Write-Host "  Installing selected packages..." -ForegroundColor Gray
-    Write-Host ""
 
     $InstallSuccess = 0
     $InstallFailed = 0
@@ -735,9 +725,6 @@ if ($InstallChoice -ne "0") {
     if ($InstallFailed -gt 0) {
         Write-Host "  WARNING: Some packages failed to install." -ForegroundColor Yellow
     }
-
-    # Restore progress preference
-    $ProgressPreference = $OldProgressPreference
 }
 
 # ============================================================

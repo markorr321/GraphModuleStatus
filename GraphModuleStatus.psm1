@@ -57,8 +57,11 @@ Function Get-GraphModuleStatus {
     }
 
     foreach ($Module in $Modules) {
-        $Installed = Get-InstalledPSResource -Name $Module.Name -ErrorAction SilentlyContinue | 
-                     Sort-Object Version -Descending | Select-Object -First 1
+        # Check both CurrentUser and AllUsers scopes
+        $Installed = @(
+            Get-InstalledPSResource -Name $Module.Name -Scope CurrentUser -ErrorAction SilentlyContinue
+            Get-InstalledPSResource -Name $Module.Name -Scope AllUsers -ErrorAction SilentlyContinue
+        ) | Sort-Object Version -Descending | Select-Object -First 1
 
         $Status = [PSCustomObject]@{
             Name             = $Module.Name
