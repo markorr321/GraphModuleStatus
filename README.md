@@ -14,8 +14,14 @@ A PowerShell module that checks the status of Microsoft Graph PowerShell modules
 
 ## Installation
 
+**PSResourceGet (recommended):**
 ```powershell
 Install-PSResource -Name GraphModuleStatus -Repository PSGallery -TrustRepository
+```
+
+**PowerShellGet:**
+```powershell
+Install-Module -Name GraphModuleStatus -Scope CurrentUser
 ```
 
 ### After Installation
