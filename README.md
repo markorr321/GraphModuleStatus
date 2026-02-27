@@ -14,30 +14,8 @@ A PowerShell module that checks the status of Microsoft Graph PowerShell modules
 
 ## Installation
 
-### From GitHub (One-Liner)
-
 ```powershell
-Invoke-RestMethod "https://raw.githubusercontent.com/markorr321/GraphModuleStatus/main/GraphModuleStatus.psm1" -OutFile "$HOME\Documents\PowerShell\Modules\GraphModuleStatus\GraphModuleStatus.psm1"; Invoke-RestMethod "https://raw.githubusercontent.com/markorr321/GraphModuleStatus/main/GraphModuleStatus.psd1" -OutFile "$HOME\Documents\PowerShell\Modules\GraphModuleStatus\GraphModuleStatus.psd1"; Invoke-RestMethod "https://raw.githubusercontent.com/markorr321/GraphModuleStatus/main/Update-MicrosoftGraph.ps1" -OutFile "$HOME\Documents\PowerShell\Modules\GraphModuleStatus\Update-MicrosoftGraph.ps1"
-```
-
-Or use this simpler version:
-
-```powershell
-$m="$HOME\Documents\PowerShell\Modules\GraphModuleStatus";New-Item $m -ItemType Directory -Force|Out-Null;@("psm1","psd1")|%{Invoke-RestMethod "https://raw.githubusercontent.com/markorr321/GraphModuleStatus/main/GraphModuleStatus.$_" -OutFile "$m\GraphModuleStatus.$_"};Invoke-RestMethod "https://raw.githubusercontent.com/markorr321/GraphModuleStatus/main/Update-MicrosoftGraph.ps1" -OutFile "$m\Update-MicrosoftGraph.ps1"
-```
-
-### From PowerShell Gallery (Coming Soon)
-
-```powershell
-Install-Module -Name GraphModuleStatus -Scope CurrentUser
-```
-
-### Manual Installation
-
-Clone the repo and copy to your modules directory:
-
-```powershell
-Copy-Item -Path ".\GraphModuleStatus" -Destination "$HOME\Documents\PowerShell\Modules\GraphModuleStatus" -Recurse
+Install-PSResource -Name GraphModuleStatus -Repository PSGallery -TrustRepository
 ```
 
 ### After Installation
@@ -213,7 +191,7 @@ Remove-GraphModuleStatusFromProfile
 
 The `Update-GraphModule` function runs `Update-MicrosoftGraph.ps1`, a comprehensive 6-step process:
 
-1. **Session Cleanup** - Removes loaded Graph/Entra modules from the current session to prevent file locking
+1. **Session Cleanup** - Removes loaded Graph modules from the current session to prevent file locking
 2. **Module Uninstallation** - Iteratively uninstalls all selected module versions using both `Uninstall-PSResource` (PSResourceGet) and `Uninstall-Module` (PowerShellGet), with garbage collection between passes
 3. **Folder Cleanup** - Removes any leftover module subfolders in all known PowerShell module paths
 4. **Fresh Installation** - Installs your choice of Microsoft.Graph and/or Microsoft.Graph.Beta from PowerShell Gallery, with scope selection (All Users or Current User)
