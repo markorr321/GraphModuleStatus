@@ -54,8 +54,8 @@ FileList = @('GraphModuleStatus.psm1', 'GraphModuleStatus.psd1', 'Update-Microso
 PrivateData = @{
     PSData = @{
         Tags = @('Microsoft365', 'Graph', 'MicrosoftGraph', 'Admin', 'Module', 'Update')
-        LicenseUri = ''
-        ProjectUri = ''
+        LicenseUri = 'https://github.com/markorr321/GraphModuleStatus/blob/main/LICENSE'
+        ProjectUri = 'https://github.com/markorr321/GraphModuleStatus'
         ReleaseNotes = 'Initial release - Get-GraphModuleStatus and Update-GraphModule functions'
     }
 }
