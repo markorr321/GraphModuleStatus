@@ -5,7 +5,11 @@ A PowerShell module that checks the status of Microsoft Graph PowerShell modules
 ## Features
 
 - **Automatic Status Check** - Shows installed vs available versions of Microsoft.Graph and Microsoft.Graph.Beta on PowerShell startup
+- **Fast Version Checking** - Checks PSGallery via URL redirect with no download and a 5-second timeout
+- **Interactive Install** - Prompts to install Graph modules when none are detected, with module and scope selection
 - **Clean Update Process** - Performs a complete uninstall and reinstall to resolve version conflicts and assembly loading errors
+- **Dual Scope Detection** - Checks both CurrentUser and AllUsers installation scopes
+- **Auto-Elevation** - Automatically launches an elevated session when All Users scope requires Administrator rights
 - **Profile Integration** - Easily add/remove the status check from your PowerShell profile
 
 ## Installation
@@ -63,20 +67,43 @@ Output (when updates available):
   [Microsoft.Graph]      v2.25.0 → v2.26.0
   [Microsoft.Graph.Beta] v2.25.0 ● Current
 
-  Update available! Run Update-GraphModule to update.
+  Update available. Run Update-GraphModule now? (Y/N):
 ```
 
 Output (when all current):
 ```
-  [Microsoft.Graph]      v2.25.0 ● Current
-  [Microsoft.Graph.Beta] v2.25.0 ● Current
+  [Microsoft.Graph]      v2.26.0 ● Current
+  [Microsoft.Graph.Beta] v2.26.0 ● Current
 ```
 
 Output (when not installed):
 ```
-  [Microsoft.Graph]      ○ Not installed
-  [Microsoft.Graph.Beta] ○ Not installed
+  [Microsoft.Graph]      ○ Not installed  (v2.26.0 available on PSGallery)
+  [Microsoft.Graph.Beta] ○ Not installed  (v2.26.0 available on PSGallery)
+
+  No Microsoft Graph modules are installed.
+  The following versions are available from PSGallery:
+
+    [Microsoft.Graph]      v2.26.0
+    [Microsoft.Graph.Beta] v2.26.0
+
+  Would you like to install them now? (Y/N):
 ```
+
+When installing, you choose which modules to install and the scope:
+```
+  Which modules would you like to install?
+
+    [1] Microsoft.Graph  v2.26.0
+    [2] Microsoft.Graph.Beta  v2.26.0
+    [A] All  (default)
+
+  Install scope:
+    [1] All Users  (Recommended)
+    [2] Current User Only
+```
+
+If All Users is selected and the session is not elevated, an elevated PowerShell window is launched automatically to complete the installation.
 
 ### Update Modules
 
@@ -184,13 +211,23 @@ Remove-GraphModuleStatusFromProfile
 
 ## What the Update Script Does
 
-The `Update-GraphModule` function runs a comprehensive update process:
+The `Update-GraphModule` function runs `Update-MicrosoftGraph.ps1`, a comprehensive 6-step process:
 
-1. **Session Cleanup** - Removes loaded Graph modules from the current session
-2. **Module Uninstallation** - Iteratively uninstalls all Graph module versions
-3. **Folder Cleanup** - Removes any leftover module folders
-4. **Fresh Installation** - Installs the latest versions from PowerShell Gallery
-5. **Validation** - Verifies the installation was successful
+1. **Session Cleanup** - Removes loaded Graph/Entra modules from the current session to prevent file locking
+2. **Module Uninstallation** - Iteratively uninstalls all selected module versions using both `Uninstall-PSResource` (PSResourceGet) and `Uninstall-Module` (PowerShellGet), with garbage collection between passes
+3. **Folder Cleanup** - Removes any leftover module subfolders in all known PowerShell module paths
+4. **Fresh Installation** - Installs your choice of Microsoft.Graph and/or Microsoft.Graph.Beta from PowerShell Gallery, with scope selection (All Users or Current User)
+5. **Module Import** - Imports `Microsoft.Graph.Authentication` immediately; all other modules load on demand
+6. **Validation** - Verifies installed versions and checks for version mismatches between Graph and Graph.Beta
+
+### Interactive Prompts
+
+The update script prompts you to:
+- **Choose which modules to uninstall** (Graph stable, Graph.Beta, or both)
+- **Choose which modules to reinstall** (same options, plus skip)
+- **Choose the installation scope** (All Users or Current User)
+
+A real-time elapsed timer is shown in the window title bar during the process.
 
 This resolves common issues like:
 - "Assembly with same name is already loaded"

@@ -170,15 +170,22 @@ Function Get-GraphModuleStatus {
 
     # If none are installed, offer to install them now
     $NoneInstalled = -not ($Results | Where-Object { $_.Installed -eq $true })
-    $AvailableForInstall = @($Results | Where-Object { $null -ne $_.AvailableVersion })
+    $NotInstalledModules = @($Results | Where-Object { -not $_.Installed })
 
-    if ($NoneInstalled -and $AvailableForInstall.Count -gt 0 -and -not $Silent -and -not $NoPrompt) {
+    if ($NoneInstalled -and $NotInstalledModules.Count -gt 0 -and -not $Silent -and -not $NoPrompt) {
         Write-Host "  No Microsoft Graph modules are installed." -ForegroundColor Yellow
-        Write-Host "  The following versions are available from PSGallery:" -ForegroundColor Yellow
+        $HasVersionInfo = @($NotInstalledModules | Where-Object { $null -ne $_.AvailableVersion })
+        if ($HasVersionInfo.Count -gt 0) {
+            Write-Host "  The following versions are available from PSGallery:" -ForegroundColor Yellow
+        }
         Write-Host ""
-        foreach ($Mod in $AvailableForInstall) {
+        foreach ($Mod in $NotInstalledModules) {
             Write-Host "    [$($Mod.Name)]" -ForegroundColor White -NoNewline
-            Write-Host " v$($Mod.AvailableVersion)" -ForegroundColor Cyan
+            if ($null -ne $Mod.AvailableVersion) {
+                Write-Host " v$($Mod.AvailableVersion)" -ForegroundColor Cyan
+            } else {
+                Write-Host " (latest)" -ForegroundColor DarkGray
+            }
         }
         Write-Host ""
 
@@ -187,14 +194,14 @@ Function Get-GraphModuleStatus {
         if ($InstallPrompt -match '^[Yy]') {
             Write-Host ""
 
-            # If more than one module is available, let the user choose which to install
-            $ModulesToInstall = $AvailableForInstall
-            if ($AvailableForInstall.Count -gt 1) {
+            # If more than one module available, let the user choose which to install
+            $ModulesToInstall = $NotInstalledModules
+            if ($NotInstalledModules.Count -gt 1) {
                 Write-Host "  Which modules would you like to install?" -ForegroundColor Cyan
                 Write-Host ""
                 $i = 1
-                foreach ($Mod in $AvailableForInstall) {
-                    Write-Host "    [$i] $($Mod.Name)  v$($Mod.AvailableVersion)" -ForegroundColor White
+                foreach ($Mod in $NotInstalledModules) {
+                    Write-Host "    [$i] $($Mod.Name)$(if ($Mod.AvailableVersion) { "  v$($Mod.AvailableVersion)" })" -ForegroundColor White
                     $i++
                 }
                 Write-Host "    [A] All  (default)" -ForegroundColor White
@@ -203,8 +210,8 @@ Function Get-GraphModuleStatus {
 
                 if ($ModChoice -match '^\d+$') {
                     $Index = [int]$ModChoice - 1
-                    if ($Index -ge 0 -and $Index -lt $AvailableForInstall.Count) {
-                        $ModulesToInstall = @($AvailableForInstall[$Index])
+                    if ($Index -ge 0 -and $Index -lt $NotInstalledModules.Count) {
+                        $ModulesToInstall = @($NotInstalledModules[$Index])
                     } else {
                         Write-Host "  Invalid choice. Installing all modules." -ForegroundColor DarkGray
                     }
@@ -230,29 +237,37 @@ Function Get-GraphModuleStatus {
                     Write-Host "  Launching elevated session to complete the installation..." -ForegroundColor Yellow
                     Write-Host ""
 
-                    $ElevatedParts = @(
+                    # Write install commands to a temp script — avoids -Command quoting issues
+                    $TempScript = [System.IO.Path]::GetTempFileName() -replace '\.tmp$', '.ps1'
+                    $ScriptLines = @(
                         "Write-Host ''",
                         "Write-Host '  Installing Microsoft Graph modules for All Users...' -ForegroundColor Cyan",
                         "Write-Host ''"
                     )
                     foreach ($Mod in $ModulesToInstall) {
-                        $ElevatedParts += "Write-Host '  Installing $($Mod.Name)...' -ForegroundColor Yellow"
-                        $ElevatedParts += "Write-Host '  (This installs all sub-modules and may take several minutes)' -ForegroundColor Gray"
-                        $ElevatedParts += "Write-Host ''"
-                        $ElevatedParts += "Install-PSResource -Name '$($Mod.Name)' -Scope AllUsers -TrustRepository"
-                        $ElevatedParts += "Write-Host ''"
-                        $ElevatedParts += "Write-Host '  $($Mod.Name) installed successfully.' -ForegroundColor Green"
-                        $ElevatedParts += "Write-Host ''"
+                        $ScriptLines += "Write-Host '  Installing $($Mod.Name)...' -ForegroundColor Yellow"
+                        $ScriptLines += "Write-Host '  (This installs all sub-modules and may take several minutes)' -ForegroundColor Gray"
+                        $ScriptLines += "Write-Host ''"
+                        $ScriptLines += "Install-PSResource -Name '$($Mod.Name)' -Scope AllUsers -TrustRepository -AcceptLicense"
+                        $ScriptLines += "Write-Host ''"
+                        $ScriptLines += "Write-Host '  $($Mod.Name) installed successfully.' -ForegroundColor Green"
+                        $ScriptLines += "Write-Host ''"
                     }
-                    $ElevatedParts += "Write-Host '  Done. Open a new PowerShell window before using Graph commands.' -ForegroundColor Green"
-                    $ElevatedParts += "Write-Host ''"
-                    $ElevatedParts += "Read-Host '  Press Enter to close'"
+                    $ScriptLines += "Write-Host '  Done. Open a new PowerShell window before using Graph commands.' -ForegroundColor Green"
+                    $ScriptLines += "Write-Host ''"
+                    $ScriptLines += "Read-Host '  Press Enter to close'"
+                    $ScriptLines += "Remove-Item -Path '$TempScript' -Force -ErrorAction SilentlyContinue"
+                    $ScriptLines | Out-File -FilePath $TempScript -Encoding utf8
 
-                    $PwshExe = if (Get-Command pwsh -ErrorAction SilentlyContinue) { "pwsh" } else { "powershell" }
+                    # Use the current process executable so elevation uses the same PS version
+                    $PwshExe = (Get-Process -Id $PID).MainModule.FileName
                     try {
-                        Start-Process $PwshExe -Verb RunAs -ArgumentList "-NoProfile", "-Command", ($ElevatedParts -join '; ') -Wait
+                        Start-Process $PwshExe -Verb RunAs -ArgumentList "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $TempScript
+                        Write-Host "  Elevated installer launched — check the new window for progress." -ForegroundColor Cyan
+                        Write-Host ""
                     }
                     catch {
+                        Remove-Item -Path $TempScript -Force -ErrorAction SilentlyContinue
                         Write-Host "  ERROR: Could not launch elevated session - $_" -ForegroundColor Red
                         Write-Host "  Run PowerShell as Administrator and call Get-GraphModuleStatus again." -ForegroundColor Yellow
                         Write-Host ""
@@ -270,11 +285,11 @@ Function Get-GraphModuleStatus {
             $InstallFailed = 0
 
             foreach ($Mod in $ModulesToInstall) {
-                Write-Host "  Installing $($Mod.Name) v$($Mod.AvailableVersion)..." -ForegroundColor Yellow
+                Write-Host "  Installing $($Mod.Name)$(if ($Mod.AvailableVersion) { " v$($Mod.AvailableVersion)" })..." -ForegroundColor Yellow
                 Write-Host "  (This installs all sub-modules and may take several minutes)" -ForegroundColor Gray
                 Write-Host ""
                 try {
-                    Install-PSResource -Name $Mod.Name -Scope $InstallScope -TrustRepository -ErrorAction Stop
+                    Install-PSResource -Name $Mod.Name -Scope $InstallScope -TrustRepository -AcceptLicense -ErrorAction Stop
                     Write-Host "  $($Mod.Name) installed successfully." -ForegroundColor Green
                     $InstallSuccess++
                 }
