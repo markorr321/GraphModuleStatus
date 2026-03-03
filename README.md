@@ -7,6 +7,7 @@ A PowerShell module that checks the status of Microsoft Graph PowerShell modules
 - **Automatic Status Check** - Shows installed vs available versions of Microsoft.Graph and Microsoft.Graph.Beta on PowerShell startup
 - **Fast Version Checking** - Checks PSGallery via URL redirect with no download and a 5-second timeout
 - **Interactive Install** - Prompts to install Graph modules when none are detected, with module and scope selection
+- **Missing Module Detection** - When one Graph module is installed but the other isn't, offers to install it (declines are remembered so you're only asked once)
 - **Clean Update Process** - Performs a complete uninstall and reinstall to resolve version conflicts and assembly loading errors
 - **Dual Scope Detection** - Checks both CurrentUser and AllUsers installation scopes
 - **Auto-Elevation** - Automatically launches an elevated session when All Users scope requires Administrator rights
@@ -87,6 +88,13 @@ When installing, you choose which modules to install and the scope:
 
 If All Users is selected and the session is not elevated, an elevated PowerShell window is launched automatically to complete the installation.
 
+> **Note:** If you install only one module (e.g., Microsoft.Graph) and later install the other (e.g., Microsoft.Graph.Beta), you may see warnings like:
+> ```
+> WARNING: Resource 'Microsoft.Graph.Authentication' with version '2.35.1' is already installed.
+> If you would like to reinstall, please run the cmdlet again with the -Reinstall parameter
+> ```
+> This is normal — both modules share common sub-modules like `Microsoft.Graph.Authentication`. The shared components are already installed and will be skipped. This does not affect functionality.
+
 ### Update Modules
 
 Run a clean uninstall and reinstall of Microsoft Graph modules:
@@ -127,7 +135,7 @@ Get-GraphModuleStatus [-Silent] [-NoPrompt]
 
 **Parameters:**
 - `-Silent` (Switch) - Suppresses console output and returns objects instead
-- `-NoPrompt` (Switch) - Does not prompt to run the update script when updates are available
+- `-NoPrompt` (Switch) - Suppresses all interactive prompts (update, install, and missing module offers)
 
 **Examples:**
 ```powershell
@@ -183,6 +191,14 @@ Remove-GraphModuleStatusFromProfile
 ```powershell
 # Remove from profile
 Remove-GraphModuleStatusFromProfile
+```
+
+## Reset Dismissed Install Prompts
+
+If you previously declined to install a missing module and want to be prompted again, delete the preferences file:
+
+```powershell
+Remove-Item "$env:APPDATA\GraphModuleStatus\preferences.json"
 ```
 
 ## Requirements
